@@ -54,3 +54,22 @@ talkValidation, rateValidation, async (req, res) => {
   writeData(talkers);
   res.status(CREAT_OK).json(newTalker);
 });
+
+app.put('/talker/:id', headerValidation, nameValidation, ageValidation,
+talkValidation, rateValidation, async (req, res) => {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const talkers = await readData();
+  const newTalker = talkers.find((t) => t.id === Number(id));
+
+  if (!newTalker) {
+  return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'Pessoa palestrante não encontrada' }); 
+  }
+
+  newTalker.name = name;
+  newTalker.age = age;
+  newTalker.talk = talk;
+  writeData(talkers);
+  return res.status(HTTP_OK_STATUS).json(newTalker);
+});
