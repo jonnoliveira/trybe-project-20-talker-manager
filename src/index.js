@@ -29,6 +29,20 @@ app.get('/talker', async (_req, res) => {
   return res.status(HTTP_OK_STATUS).json(talkers);
 });
 
+app.get('/talker/search', headerValidation, async (req, res) => {
+  const { query } = req;
+  const talkers = await readData();
+  if (!query) return res.status(HTTP_OK_STATUS).json(talkers);
+
+  const findTalkers = talkers.filter((talk) => talk.name.toLowerCase()
+    .includes((query.q).toLowerCase()));
+   
+  if (!findTalkers) {
+      return res.status(HTTP_OK_STATUS).json([]);
+    }
+  return res.status(HTTP_OK_STATUS).json(findTalkers);
+});
+
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
   const talker = await findInData(id);
