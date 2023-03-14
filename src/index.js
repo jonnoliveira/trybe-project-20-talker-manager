@@ -1,7 +1,8 @@
 const express = require('express');
 const { readData, findInData } = require('./utils/fsUtil');
 const { createHash } = require('./utils/randomToken');
-
+const { validationEmail, validationPassword } = require('./utils/validations');
+ 
 const app = express();
 app.use(express.json());
 
@@ -34,11 +35,7 @@ app.get('/talker/:id', async (req, res) => {
     return res.status(HTTP_NOT_FOUND).json({ message: 'Pessoa palestrante não encontrada' });
 });
 
-app.post('/login', async (req, res) => {
-  const requiredProperties = ['email', 'password'];
-  if (requiredProperties.every((property) => property in req.body)) {
-    const token = await createHash();
-    return res.status(HTTP_OK_STATUS).json({ token });
-  } 
-    return res.status(HTTP_NOT_FOUND).json({ message: 'Erro na requisição' });
+app.post('/login', validationEmail, validationPassword, async (req, res) => {
+  const token = await createHash();
+  return res.status(HTTP_OK_STATUS).json({ token });
 });
