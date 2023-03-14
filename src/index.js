@@ -9,6 +9,7 @@ app.use(express.json());
 
 const HTTP_OK_STATUS = 200;
 const CREAT_OK = 201;
+const HTTP_OK_DELETE = 204;
 const HTTP_NOT_FOUND = 404;
 const PORT = process.env.PORT || '3001';
 
@@ -72,4 +73,16 @@ talkValidation, rateValidation, async (req, res) => {
   newTalker.talk = talk;
   writeData(talkers);
   return res.status(HTTP_OK_STATUS).json(newTalker);
+});
+
+app.delete('/talker/:id', headerValidation, async (req, res) => {
+  const { id } = req.params;
+  const talkers = await readData();
+  const talker = talkers.find((talk) => talk.id === Number(id));
+  if (talker) {
+    const index = talkers.indexOf(talker);
+    talkers.splice(index, 1);
+    writeData(talkers);
+    return res.status(HTTP_OK_DELETE).json();
+  }
 });
