@@ -23,7 +23,17 @@ const findInData = async (id) => {
   }
 };
 
+const writeData = async (newData) => {
+  try {
+    const stringfy = JSON.stringify(newData);
+    return fs.writeFile(path.resolve(__dirname, JSON_DATA), stringfy);
+  } catch (error) {
+    return console.log(`Erro no writeData: ${error}`);
+  }
+};
+
 module.exports = {
   readData,
   findInData,
+  writeData,
 };

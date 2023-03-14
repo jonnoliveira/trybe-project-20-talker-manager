@@ -1,11 +1,13 @@
 const HTTP_NOT_FOUND = 400;
+const HTTP_CLIENT_AUTH = 401;
 
 const validationEmail = async (req, res, next) => {
-  if (!req.body.email) {
+  const { email } = req.body;
+  if (!email) {
     return res.status(HTTP_NOT_FOUND).json({ message: 'O campo "email" é obrigatório' });
   }
   const emailPattern = (/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/);
-  const validEmail = emailPattern.test(req.body.email);
+  const validEmail = emailPattern.test(email);
   if (!validEmail) {
   return res.status(HTTP_NOT_FOUND)
     .json({ message: 'O "email" deve ter o formato "email@email.com"' }); 
@@ -14,12 +16,79 @@ const validationEmail = async (req, res, next) => {
 };
 
 const validationPassword = async (req, res, next) => {
-  if (!req.body.password) {
+  const { password } = req.body;
+  if (!password) {
     return res.status(HTTP_NOT_FOUND).json({ message: 'O campo "password" é obrigatório' });
   }
-  if (req.body.password.length < 6) {
+  if (password.length < 6) {
   return res.status(HTTP_NOT_FOUND)
    .json({ message: 'O "password" deve ter pelo menos 6 caracteres' }); 
+  }
+  next();
+};
+
+const headerValidation = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    return res.status(HTTP_CLIENT_AUTH).json({ message: 'Token não encontrado' });
+  }
+  if (authorization.length !== 16 || typeof authorization !== 'string') {
+    return res.status(HTTP_CLIENT_AUTH).json({ message: 'Token inválido' });
+  }
+  next();
+};
+
+const nameValidation = (req, res, next) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "name" é obrigatório' }); 
+  }
+  if (name.length < 3) {
+  return res.status(HTTP_NOT_FOUND).json({ message: 'O "name" deve ter pelo menos 3 caracteres' }); 
+  }
+  next();
+};
+
+const ageValidation = (req, res, next) => {
+  const { age } = req.body;
+  if (!age) {
+    return res.status(HTTP_NOT_FOUND).json({ message: 'O campo "age" é obrigatório' }); 
+  }
+  if (!Number.isInteger(age) || age < 18) {
+    return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'O campo "age" deve ser um número inteiro igual ou maior que 18' }); 
+  }
+  next();
+};
+
+const talkValidation = (req, res, next) => {
+  const { talk } = req.body;
+  if (!talk) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "talk" é obrigatório' }); 
+  }
+  if (!talk.watchedAt) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "watchedAt" é obrigatório' }); 
+  }
+  const patternData = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
+  if (!patternData.test(talk.watchedAt)) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"' });
+  }
+  next();
+};
+
+const rateValidation = (req, res, next) => {
+  const { talk } = req.body;
+  if (talk.rate === undefined) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "rate" é obrigatório' }); 
+  }
+  if (!Number.isInteger(talk.rate) || talk.rate < 1 || talk.rate > 5) {
+    return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
   }
   next();
 };
@@ -27,4 +96,9 @@ const validationPassword = async (req, res, next) => {
 module.exports = {
   validationEmail,
   validationPassword,
+  headerValidation,
+  nameValidation,
+  ageValidation,
+  talkValidation,
+  rateValidation,
 };
