@@ -1,4 +1,5 @@
 const express = require('express');
+const talkersDB = require('./db/talkersDB');
 const { readData, findInData, writeData } = require('./utils/fsUtil');
 const { createHash } = require('./utils/randomToken');
 const { validationEmail, validationPassword, headerValidation, nameValidation,
@@ -14,6 +15,7 @@ const HTTP_OK_STATUS = 200;
 const CREAT_OK = 201;
 const HTTP_OK_DELETE = 204;
 const HTTP_NOT_FOUND = 404;
+const HTTP_SERVER_ERROR = 500;
 const PORT = process.env.PORT || '3001';
 
 // não remova esse endpoint, e para o avaliador funcionar <<
@@ -29,6 +31,22 @@ app.listen(PORT, () => {
 app.get('/talker', async (_req, res) => {
   const talkers = await readData();
   return res.status(HTTP_OK_STATUS).json(talkers);
+});
+
+app.get('/talker/db', async (_req, res) => {
+  try {
+    const [response] = await talkersDB.findAll();
+    const result = response
+      .map(({ name, age, id, talk_watched_at: watchedAt, talk_rate: rate }) => (
+      {
+        name, age, id, talk: { watchedAt, rate },
+      }
+    ));
+    res.status(HTTP_OK_STATUS).json(result);
+  } catch (error) {
+    console.log(error);
+    res.status(HTTP_SERVER_ERROR).json({ message: error.sqlMessage });
+  }
 });
 
 app.get('/talker/search', headerValidation, queryValidation, queryRateValidation,
