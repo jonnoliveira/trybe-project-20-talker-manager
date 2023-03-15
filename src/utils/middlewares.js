@@ -96,10 +96,10 @@ const rateValidation = (req, res, next) => {
   next();
 };
 
-const queryQValidation = async (req, res, next) => {
-  const { q, rate } = req.query;
+const queryValidation = async (req, res, next) => {
+  const { q, rate, date } = req.query;
   const talkers = await readData();
-  if (!q && !rate) return res.status(HTTP_OK_STATUS).json(talkers);
+  if (!q && !rate && !date) return res.status(HTTP_OK_STATUS).json(talkers);
   next();
 };
 
@@ -139,6 +139,49 @@ const queryRateAndNoQ = async (req, res, next) => {
   next();
 };
 
+const queryDateValidation = async (req, res, next) => {
+  const { date } = req.query;
+  const talkers = await readData();
+  const patternData = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
+  if (!patternData.test(date)) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
+  } 
+  const talker = talkers.filter((t) => t.talk.watchedAt === date);
+  if (talker) return res.status(HTTP_OK_STATUS).json(talker);
+  
+  next();
+};
+
+const queryDateAndRate = async (req, res, next) => {
+  const { date, rate } = req.query;
+  const talkers = await readData();
+  if (date && rate) {
+    const findTalkers = talkers.filter((t) => (
+      (t.talk.rate === Number(rate)) && (t.talk.watchedAt === date)));
+    if (!findTalkers) {
+        return res.status(HTTP_OK_STATUS).json([]);
+      }
+    return res.status(HTTP_OK_STATUS).json(findTalkers);
+  }
+  next();
+};
+
+const queryDateAndQ = async (req, res, next) => {
+  const { date, q } = req.query;
+  const talkers = await readData();
+  if (date && q) {
+    const findTalkers = talkers.filter((t) => (
+      t.talk.watchedAt === date && t.name.toLowerCase()
+      .includes((q).toLowerCase())));
+    if (!findTalkers) {
+        return res.status(HTTP_OK_STATUS).json([]);
+      }
+    return res.status(HTTP_OK_STATUS).json(findTalkers);
+  }
+  next();
+};
+
 module.exports = {
   validationEmail,
   validationPassword,
@@ -147,8 +190,11 @@ module.exports = {
   ageValidation,
   talkValidation,
   rateValidation,
-  queryQValidation,
+  queryValidation,
   queryRateValidation,
   queryQAndNoRate,
   queryRateAndNoQ,
+  queryDateValidation,
+  queryDateAndRate,
+  queryDateAndQ,
 };

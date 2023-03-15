@@ -3,8 +3,9 @@ const { readData, findInData, writeData } = require('./utils/fsUtil');
 const { createHash } = require('./utils/randomToken');
 const { validationEmail, validationPassword, headerValidation, nameValidation,
   ageValidation, talkValidation, rateValidation,
-  queryQValidation, queryRateValidation, queryQAndNoRate,
-  queryRateAndNoQ } = require('./utils/middlewares');
+  queryValidation, queryRateValidation, queryQAndNoRate,
+  queryRateAndNoQ, queryDateValidation, queryDateAndRate,
+  queryDateAndQ } = require('./utils/middlewares');
  
 const app = express();
 app.use(express.json());
@@ -30,8 +31,8 @@ app.get('/talker', async (_req, res) => {
   return res.status(HTTP_OK_STATUS).json(talkers);
 });
 
-app.get('/talker/search', headerValidation, queryQValidation, queryRateValidation, 
-queryQAndNoRate, queryRateAndNoQ, async (req, res) => {
+app.get('/talker/search', headerValidation, queryDateAndRate, queryDateAndQ, queryValidation, queryDateValidation, 
+queryRateValidation, queryQAndNoRate, queryRateAndNoQ, async (req, res) => {
   const { q, rate } = req.query;
   const talkers = await readData();
     if (q && rate) {
