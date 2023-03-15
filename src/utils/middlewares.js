@@ -134,7 +134,6 @@ const queryQAndNoRate = async (req, res, next) => {
   const { q, rate, date } = req.query;
   const talkers = await readData();
   if (q && !rate && !date) {
-    console.log('queryQAndNoRate');
     const findTalkers = talkers.filter((talk) => talk.name.toLowerCase()
     .includes((q).toLowerCase()));
     return res.status(HTTP_OK_STATUS).json(findTalkers);
@@ -146,7 +145,6 @@ const queryRateAndNoQ = async (req, res, next) => {
   const { q, rate, date } = req.query;
   const talkers = await readData();
   if (!q && rate && !date) {
-    console.log('queryRateAndNoQ');
     const findTalkers = talkers.filter((t) => t.talk.rate === Number(rate));
     return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
@@ -157,7 +155,6 @@ const queryRateAndQ = async (req, res, next) => {
   const { q, rate, date } = req.query;
   const talkers = await readData();
   if (q && rate && !date) {
-    console.log('queryRateAndQ');
     const findTalkers = talkers.filter((t) => t.talk.rate === Number(rate) 
       && t.name.toLowerCase().includes((q).toLowerCase()));
     return res.status(HTTP_OK_STATUS).json(findTalkers);
@@ -169,7 +166,6 @@ const queryDateValidation = async (req, res, next) => {
   const { date, rate, q } = req.query;
   
   if (date && !rate && !q) {
-    console.log('queryDateValidation');
     const patternData = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
     if (!patternData.test(date)) {
       return res.status(HTTP_NOT_FOUND)
@@ -182,7 +178,6 @@ const queryDateValidation = async (req, res, next) => {
 const queryDate = async (req, res, next) => {
   const { date, rate, q } = req.query;
   if (date && !rate && !q) {
-    console.log('queryDate');
     const talkers = await readData();
     const talker = talkers.filter((t) => t.talk.watchedAt === date);
     if (talker) return res.status(HTTP_OK_STATUS).json(talker);
@@ -194,7 +189,6 @@ const queryDateAndRate = async (req, res, next) => {
   const { date, rate, q } = req.query;
   const talkers = await readData();
   if (date && rate && !q) {
-    console.log('queryDateAndRate');
     const findTalkers = talkers.filter((t) => (
       (t.talk.rate === Number(rate)) && (t.talk.watchedAt === date)));
     return res.status(HTTP_OK_STATUS).json(findTalkers);
@@ -206,7 +200,6 @@ const queryDateAndQ = async (req, res, next) => {
   const { date, q, rate } = req.query;
   const talkers = await readData();
   if (date && q && !rate) {
-    console.log('queryDateAndQ');
     const findTalkers = talkers.filter((t) => (
       t.name.toLowerCase().includes((q).toLowerCase())
       && t.talk.watchedAt === date));
