@@ -80,10 +80,13 @@ app.post('/login', validationEmail, validationPassword, async (_req, res) => {
 
 app.post('/talker', headerValidation, nameValidation, ageValidation,
 talkValidation, rateValidation, async (req, res) => {
+  const { name, age, talk } = req.body;
   const talkers = await readData();
   const newTalker = {
+    name,
+    age,
     id: talkers.length + 1,
-    ...req.body,
+    talk,
   };
 
   talkers.push(newTalker);
