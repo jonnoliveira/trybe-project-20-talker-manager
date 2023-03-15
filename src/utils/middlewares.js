@@ -108,6 +108,24 @@ const queryRateValidation = async (req, res, next) => {
   if (rate && (!Number.isInteger(+rate) || Number(rate) < 1 || Number(rate) > 5)) {
     return res.status(HTTP_NOT_FOUND)
     .json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' }); 
+  }    
+  next();
+};
+
+const noRate = async (req, res, next) => {
+  const { rate } = req.body;
+  if (rate === '' || rate === undefined) {
+    return res.status(HTTP_NOT_FOUND)
+      .json({ message: 'O campo "rate" é obrigatório' });
+  }
+  next();
+};
+
+const hasRate = async (req, res, next) => {
+  const { rate } = req.body;
+  if (rate === 0 || (!Number.isInteger(rate) || Number(rate) < 1 || Number(rate) > 5)) {
+    return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
   }
   next();
 };
@@ -214,4 +232,6 @@ module.exports = {
   queryDate,
   queryDateAndRate,
   queryDateAndQ,
+  noRate,
+  hasRate,
 };

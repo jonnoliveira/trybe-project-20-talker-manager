@@ -5,7 +5,7 @@ const { validationEmail, validationPassword, headerValidation, nameValidation,
   ageValidation, talkValidation, rateValidation,
   queryValidation, queryRateValidation, queryQAndNoRate,
   queryRateAndNoQ, queryDateValidation, queryDate, queryDateAndRate,
-  queryDateAndQ, queryRateAndQ } = require('./utils/middlewares');
+  queryDateAndQ, queryRateAndQ, noRate, hasRate } = require('./utils/middlewares');
  
 const app = express();
 app.use(express.json());
@@ -102,4 +102,19 @@ app.delete('/talker/:id', headerValidation, async (req, res) => {
     writeData(talkers);
     return res.status(HTTP_OK_DELETE).json();
   }
+});
+
+app.patch('/talker/rate/:id', headerValidation, noRate, hasRate, async (req, res) => {
+  const { id } = req.params;
+  const { rate } = req.body;
+  const talkers = await readData();
+  const newTalker = talkers.find((t) => t.id === Number(id));
+  if (!newTalker) {
+  return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'Pessoa palestrante não encontrada' }); 
+  }
+
+  newTalker.talk.rate = rate;
+  writeData(talkers);
+  return res.status(HTTP_OK_DELETE).json();
 });
