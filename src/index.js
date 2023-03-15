@@ -4,8 +4,8 @@ const { createHash } = require('./utils/randomToken');
 const { validationEmail, validationPassword, headerValidation, nameValidation,
   ageValidation, talkValidation, rateValidation,
   queryValidation, queryRateValidation, queryQAndNoRate,
-  queryRateAndNoQ, queryDateValidation, queryDateAndRate,
-  queryDateAndQ } = require('./utils/middlewares');
+  queryRateAndNoQ, queryDateValidation, queryDate, queryDateAndRate,
+  queryDateAndQ, queryRateAndQ } = require('./utils/middlewares');
  
 const app = express();
 app.use(express.json());
@@ -31,18 +31,18 @@ app.get('/talker', async (_req, res) => {
   return res.status(HTTP_OK_STATUS).json(talkers);
 });
 
-app.get('/talker/search', headerValidation, queryDateAndRate, queryDateAndQ, queryValidation, queryDateValidation, 
-queryRateValidation, queryQAndNoRate, queryRateAndNoQ, async (req, res) => {
-  const { q, rate } = req.query;
+app.get('/talker/search', headerValidation, queryValidation, queryRateValidation,
+queryDateAndQ, queryQAndNoRate, queryRateAndNoQ, queryRateAndQ,
+queryDateValidation, queryDate, queryDateAndRate,
+async (req, res) => {
+  const { q, rate, date } = req.query;
   const talkers = await readData();
-    if (q && rate) {
-    const findTalkers = talkers.filter((t) => (
-      (t.talk.rate === Number(rate)) && (t.name.toLowerCase()
-        .includes((q).toLowerCase()))));
-    if (!findTalkers) {
-        return res.status(HTTP_OK_STATUS).json([]);
-      }
-      return res.status(HTTP_OK_STATUS).json(findTalkers);
+  if (q && rate && date) {
+    console.log('queryQAndRateAndDate');
+    const findTalkers = talkers.filter((t) => (t.talk.watchedAt === date 
+      && t.name.toLowerCase().includes((q).toLowerCase())
+      && t.talk.rate === Number(rate)));
+    if (findTalkers) return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
 });
 

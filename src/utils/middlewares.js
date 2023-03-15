@@ -113,70 +113,85 @@ const queryRateValidation = async (req, res, next) => {
 };
 
 const queryQAndNoRate = async (req, res, next) => {
-  const { q, rate } = req.query;
+  const { q, rate, date } = req.query;
   const talkers = await readData();
-    if (q && !rate) {
+  if (q && !rate && !date) {
+    console.log('queryQAndNoRate');
     const findTalkers = talkers.filter((talk) => talk.name.toLowerCase()
     .includes((q).toLowerCase()));
-    if (!findTalkers) {
-        return res.status(HTTP_OK_STATUS).json([]);
-      }
-      return res.status(HTTP_OK_STATUS).json(findTalkers);
+    return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
   next();
 };
 
 const queryRateAndNoQ = async (req, res, next) => {
-  const { q, rate } = req.query;
+  const { q, rate, date } = req.query;
   const talkers = await readData();
-    if (!q && rate) {
+  if (!q && rate && !date) {
+    console.log('queryRateAndNoQ');
     const findTalkers = talkers.filter((t) => t.talk.rate === Number(rate));
-    if (!findTalkers) {
-        return res.status(HTTP_OK_STATUS).json([]);
-      }
-      return res.status(HTTP_OK_STATUS).json(findTalkers);
+    return res.status(HTTP_OK_STATUS).json(findTalkers);
+  }
+  next();
+};
+
+const queryRateAndQ = async (req, res, next) => {
+  const { q, rate, date } = req.query;
+  const talkers = await readData();
+  if (q && rate && !date) {
+    console.log('queryRateAndQ');
+    const findTalkers = talkers.filter((t) => t.talk.rate === Number(rate) 
+      && t.name.toLowerCase().includes((q).toLowerCase()));
+    return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
   next();
 };
 
 const queryDateValidation = async (req, res, next) => {
-  const { date } = req.query;
-  const talkers = await readData();
-  const patternData = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
-  if (!patternData.test(date)) {
-    return res.status(HTTP_NOT_FOUND)
-      .json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
-  } 
-  const talker = talkers.filter((t) => t.talk.watchedAt === date);
-  if (talker) return res.status(HTTP_OK_STATUS).json(talker);
+  const { date, rate, q } = req.query;
   
+  if (date && !rate && !q) {
+    console.log('queryDateValidation');
+    const patternData = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
+    if (!patternData.test(date)) {
+      return res.status(HTTP_NOT_FOUND)
+        .json({ message: 'O parâmetro "date" deve ter o formato "dd/mm/aaaa"' });
+    } 
+  }
+  next();
+};
+
+const queryDate = async (req, res, next) => {
+  const { date, rate, q } = req.query;
+  if (date && !rate && !q) {
+    console.log('queryDate');
+    const talkers = await readData();
+    const talker = talkers.filter((t) => t.talk.watchedAt === date);
+    if (talker) return res.status(HTTP_OK_STATUS).json(talker);
+  }
   next();
 };
 
 const queryDateAndRate = async (req, res, next) => {
-  const { date, rate } = req.query;
+  const { date, rate, q } = req.query;
   const talkers = await readData();
-  if (date && rate) {
+  if (date && rate && !q) {
+    console.log('queryDateAndRate');
     const findTalkers = talkers.filter((t) => (
       (t.talk.rate === Number(rate)) && (t.talk.watchedAt === date)));
-    if (!findTalkers) {
-        return res.status(HTTP_OK_STATUS).json([]);
-      }
     return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
   next();
 };
 
 const queryDateAndQ = async (req, res, next) => {
-  const { date, q } = req.query;
+  const { date, q, rate } = req.query;
   const talkers = await readData();
-  if (date && q) {
+  if (date && q && !rate) {
+    console.log('queryDateAndQ');
     const findTalkers = talkers.filter((t) => (
-      t.talk.watchedAt === date && t.name.toLowerCase()
-      .includes((q).toLowerCase())));
-    if (!findTalkers) {
-        return res.status(HTTP_OK_STATUS).json([]);
-      }
+      t.name.toLowerCase().includes((q).toLowerCase())
+      && t.talk.watchedAt === date));
     return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
   next();
@@ -194,7 +209,9 @@ module.exports = {
   queryRateValidation,
   queryQAndNoRate,
   queryRateAndNoQ,
+  queryRateAndQ,
   queryDateValidation,
+  queryDate,
   queryDateAndRate,
   queryDateAndQ,
 };
