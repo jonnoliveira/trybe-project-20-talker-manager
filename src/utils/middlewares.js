@@ -1,5 +1,8 @@
+const { readData } = require('./fsUtil');
+
 const HTTP_NOT_FOUND = 400;
 const HTTP_CLIENT_AUTH = 401;
+const HTTP_OK_STATUS = 200;
 
 const validationEmail = async (req, res, next) => {
   const { email } = req.body;
@@ -86,9 +89,52 @@ const rateValidation = (req, res, next) => {
     return res.status(HTTP_NOT_FOUND)
       .json({ message: 'O campo "rate" é obrigatório' }); 
   }
-  if (!Number.isInteger(talk.rate) || talk.rate < 1 || talk.rate > 5) {
+  if (!Number.isInteger(talk.rate) || Number(talk.rate) < 1 || Number(talk.rate) > 5) {
     return res.status(HTTP_NOT_FOUND)
     .json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' });
+  }
+  next();
+};
+
+const queryQValidation = async (req, res, next) => {
+  const { q, rate } = req.query;
+  const talkers = await readData();
+  if (!q && !rate) return res.status(HTTP_OK_STATUS).json(talkers);
+  next();
+};
+
+const queryRateValidation = async (req, res, next) => {
+  const { rate } = req.query;
+  if (rate && (!Number.isInteger(+rate) || Number(rate) < 1 || Number(rate) > 5)) {
+    return res.status(HTTP_NOT_FOUND)
+    .json({ message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' }); 
+  }
+  next();
+};
+
+const queryQAndNoRate = async (req, res, next) => {
+  const { q, rate } = req.query;
+  const talkers = await readData();
+    if (q && !rate) {
+    const findTalkers = talkers.filter((talk) => talk.name.toLowerCase()
+    .includes((q).toLowerCase()));
+    if (!findTalkers) {
+        return res.status(HTTP_OK_STATUS).json([]);
+      }
+      return res.status(HTTP_OK_STATUS).json(findTalkers);
+  }
+  next();
+};
+
+const queryRateAndNoQ = async (req, res, next) => {
+  const { q, rate } = req.query;
+  const talkers = await readData();
+    if (!q && rate) {
+    const findTalkers = talkers.filter((t) => t.talk.rate === Number(rate));
+    if (!findTalkers) {
+        return res.status(HTTP_OK_STATUS).json([]);
+      }
+      return res.status(HTTP_OK_STATUS).json(findTalkers);
   }
   next();
 };
@@ -101,4 +147,8 @@ module.exports = {
   ageValidation,
   talkValidation,
   rateValidation,
+  queryQValidation,
+  queryRateValidation,
+  queryQAndNoRate,
+  queryRateAndNoQ,
 };

@@ -2,7 +2,9 @@ const express = require('express');
 const { readData, findInData, writeData } = require('./utils/fsUtil');
 const { createHash } = require('./utils/randomToken');
 const { validationEmail, validationPassword, headerValidation, nameValidation,
-  ageValidation, talkValidation, rateValidation } = require('./utils/validations');
+  ageValidation, talkValidation, rateValidation,
+  queryQValidation, queryRateValidation, queryQAndNoRate,
+  queryRateAndNoQ } = require('./utils/middlewares');
  
 const app = express();
 app.use(express.json());
@@ -23,24 +25,24 @@ app.listen(PORT, () => {
 });
 
 // ENDPOINTS
-
 app.get('/talker', async (_req, res) => {
   const talkers = await readData();
   return res.status(HTTP_OK_STATUS).json(talkers);
 });
 
-app.get('/talker/search', headerValidation, async (req, res) => {
-  const { query } = req;
+app.get('/talker/search', headerValidation, queryQValidation, queryRateValidation, 
+queryQAndNoRate, queryRateAndNoQ, async (req, res) => {
+  const { q, rate } = req.query;
   const talkers = await readData();
-  if (!query) return res.status(HTTP_OK_STATUS).json(talkers);
-
-  const findTalkers = talkers.filter((talk) => talk.name.toLowerCase()
-    .includes((query.q).toLowerCase()));
-   
-  if (!findTalkers) {
-      return res.status(HTTP_OK_STATUS).json([]);
-    }
-  return res.status(HTTP_OK_STATUS).json(findTalkers);
+    if (q && rate) {
+    const findTalkers = talkers.filter((t) => (
+      (t.talk.rate === Number(rate)) && (t.name.toLowerCase()
+        .includes((q).toLowerCase()))));
+    if (!findTalkers) {
+        return res.status(HTTP_OK_STATUS).json([]);
+      }
+      return res.status(HTTP_OK_STATUS).json(findTalkers);
+  }
 });
 
 app.get('/talker/:id', async (req, res) => {
