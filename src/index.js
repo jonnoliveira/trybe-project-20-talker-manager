@@ -82,10 +82,11 @@ app.post('/talker', headerValidation, nameValidation, ageValidation,
 talkValidation, rateValidation, async (req, res) => {
   const { name, age, talk } = req.body;
   const talkers = await readData();
+  const id = talkers.length + 1;
   const newTalker = {
     name,
     age,
-    id: talkers.length + 1,
+    id,
     talk,
   };
 
