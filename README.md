@@ -64,7 +64,7 @@ Por fim, com objetivo de validar e tratar as informações, criei diversos middl
 
 ## 100% :heavy_check_mark:
 
-![Project-talker-manager-grade]()
+![Project-talker-manager-grade](https://github.com/jonnoliveira/trybe-project-20-talker-manager/blob/main/images/talker-manager-grade.png)
 
 </details> 
  
